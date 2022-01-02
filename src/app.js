@@ -81,12 +81,12 @@ io.of('/web-socket/home').on('connection', (socket) => {
       ]
     };
 
-    roomArray.push(msg.data);
+    roomArray.push(data);
 
     console.log(typeof msg)
     console.log(msg)
     if(data.roomtype === 'public'){
-      io.emit('createRoom', msg);
+      io.emit('createRoom', data);
     }
   })
 
