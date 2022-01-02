@@ -6,7 +6,8 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server, {
   cors: {
-    origin: true
+    origin: true,
+    methods: ["GET", "POST"]
   }
 });
 const { nanoid } = require('nanoid'); 
