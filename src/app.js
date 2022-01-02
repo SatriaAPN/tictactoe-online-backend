@@ -15,11 +15,11 @@ let playersArray = [];
 app.set('view engine', 'ejs')
 app.use(cors())
 
-app.get('/', (req, res, next) => {
+app.get('/:roomId', (req, res, next) => {
   try{
-    res.status(200).render(__dirname + '/frontend/home.ejs', { roomArray });
+    res.status(200).render(__dirname + '/index.ejs', { id: req.params.roomId });
   } catch(err) {
-    res.status(400).json({ message: 'gagal' });
+    res.status(400).json({ message: err.message });
   }
 })
 
@@ -127,6 +127,19 @@ io.of('/web-socket/room').on('connection', (socket) => {
       io.emit(roomId, msg);
     }
   })
+})
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+
+  socket.on('room', (msg) => {
+    console.log(typeof msg)
+    console.log(msg)
+    io.emit(msg.socket, msg.message);
+  });
 })
 
 server.listen(3001, () => {
