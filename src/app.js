@@ -94,12 +94,6 @@ io.of('/web-socket/home').on('connection', (socket) => {
       io.emit('createRoom', data);
     }
   })
-
-  socket.on('createRoom', (data) => {
-    console.log(typeof msg)
-    console.log(msg)
-    io.emit(msg.socket, msg.message);
-  });
 })
 
 io.of('/web-socket/room').on('connection', (socket) => {
