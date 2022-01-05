@@ -28,6 +28,11 @@ app.get('/:roomId', (req, res, next) => {
   }
 })
 
+app.get('/users/test', (req, res, next) => {
+  console.log(req.header);
+  console.log(req.header('Authorization'));
+})
+
 app.post('/users/auth', (req, res, next) => {
   res.status(200).json({
     data: {
