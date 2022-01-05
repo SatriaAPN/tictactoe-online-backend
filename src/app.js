@@ -137,7 +137,7 @@ io.of('/web-socket/room').on('connection', (socket) => {
 
     console.log(typeof msg)
     console.log(msg)
-    if(data.roomtype === 'public'){
+    if(data.roomtType === 'public'){
       io.emit(roomId, msg);
     }
   })
