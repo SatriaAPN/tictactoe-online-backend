@@ -28,6 +28,16 @@ app.get('/:roomId', (req, res, next) => {
   }
 })
 
+app.post('/users/auth', (req, res, next) => {
+  res.status(200).json({
+    data: {
+      displayName:"Site Manager",
+      accessToken:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzaWQiOiJkYmViMjlhYTMyYjg0MTMxYTA0NjY4MDAyNzAxNWEwZSIsInJvbGUiOlsiQWRtaW5pc3RyYXRvcnMiLCJSZWdpc3RlcmVkIFVzZXJzIiwiU3Vic2NyaWJlcnMiXSwiaXNzIjoidGVzdHNpdGVjZS5sdmgubWUiLCJleHAiOjE0NTA4MzU2ODMsIm5iZiI6MTQ1MDgzMTc4M30.Yf3mmBJ8nV_IozqvvLc8L34dDklU2J7z0uXn3jsICp0",
+      renewalToken:"qjjd1vmgbtWb23fPK4J9ttUQBKpgC6k1yFmnteU+9mlFxcHeC3rJlly8oGBBAIzw"
+    }
+  });
+})
+
 app.post('/users', (req, res, next) => {
   try {
     const { username } = req.body;
