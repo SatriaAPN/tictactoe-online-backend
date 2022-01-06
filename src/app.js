@@ -10,7 +10,8 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
-const { nanoid } = require('nanoid'); 
+const { nanoid } = require('nanoid');
+const jwt = require('jsonwebtoken'); 
 
 // data array
 let roomArray = [];
@@ -33,14 +34,21 @@ app.get('/users/test', (req, res, next) => {
   console.log(req.header('Authorization'));
 })
 
-app.post('/users/auth', (req, res, next) => {
-  res.status(200).json({
-    data: {
-      displayName:"Site Manager",
-      accessToken:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzaWQiOiJkYmViMjlhYTMyYjg0MTMxYTA0NjY4MDAyNzAxNWEwZSIsInJvbGUiOlsiQWRtaW5pc3RyYXRvcnMiLCJSZWdpc3RlcmVkIFVzZXJzIiwiU3Vic2NyaWJlcnMiXSwiaXNzIjoidGVzdHNpdGVjZS5sdmgubWUiLCJleHAiOjE0NTA4MzU2ODMsIm5iZiI6MTQ1MDgzMTc4M30.Yf3mmBJ8nV_IozqvvLc8L34dDklU2J7z0uXn3jsICp0",
-      renewalToken:"qjjd1vmgbtWb23fPK4J9ttUQBKpgC6k1yFmnteU+9mlFxcHeC3rJlly8oGBBAIzw"
-    }
-  });
+app.post('/api/users/auth', async(req, res, next) => {
+  try {
+    const { username } = req.body;
+    const uuid = nanoid(10);
+
+    const jwtToken = await jwt.sign({ username, uuid }, 'shhhhh');
+
+    res.status(200).json({
+      data: {
+        accessToken: jwtToken
+      }
+    })
+  } catch(err) {
+    res.status(400).json({ message: 'failed' });
+  }
 })
 
 app.post('/users', (req, res, next) => {
