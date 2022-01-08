@@ -109,20 +109,20 @@ io.on('connection', (socket) => {
 
   socket.on('createRoom', (msg) => {
     const body = {
-      jwtToken = msg.Authorization, // Header jwt {token}
+      jwtToken: msg.Authorization, // Header jwt {token}
       roomType: msg.roomType,
       roomName: msg.roomName
     }
 
-    const user = verifJwtToken(body.jwtToken);
+    const user = verifJwtToken(body.jwtToken); // {username, uuid}
 
     const data =  {
-      status: 'waiting',
-      roomType: msg.roomType,
-      roomId: nanoid(10),
-      roomName: msg.roomName,
+      roomWaiting: true,
+      roomType: body.roomType,
+      roomUuid: nanoid(10),
+      roomName: body.roomName,
       players: [
-        msg.players
+        user
       ]
     };
 
