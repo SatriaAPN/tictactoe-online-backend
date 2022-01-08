@@ -12,9 +12,10 @@ const io = new Server(server, {
 });
 const { nanoid } = require('nanoid');
 const jwt = require('jsonwebtoken'); 
+const secretKey = 'thisIsSecretKey';
 
 // data array
-let roomArray = [];
+let roomsArray = [];
 let playersArray = [];
 
 // middleware
@@ -39,7 +40,7 @@ app.post('/api/users/auth', async(req, res, next) => {
     const { username } = req.body;
     const uuid = nanoid(10);
 
-    const jwtToken = await jwt.sign({ username, uuid }, 'shhhhh');
+    const jwtToken = await jwt.sign({ username, uuid }, secretKey);
 
     res.status(200).json({
       data: {
@@ -47,7 +48,7 @@ app.post('/api/users/auth', async(req, res, next) => {
       }
     })
   } catch(err) {
-    res.status(400).json({ message: 'failed' });
+    res.status(400).json({ message: err.message });
   }
 })
 
@@ -66,22 +67,30 @@ app.post('/users', (req, res, next) => {
   }
 })
 
-app.get('/room/:roomId', (req, res, next) => {
+app.get('/api/rooms/:uuid', (req, res, next) => {
   try {
-    const { roomId } = req.params;
+    const { uuid } = req.params;
 
-    const roomIndex = roomArray.map(as=>as.roomId).indexOf(roomId);
+    const roomIndex = roomsArray.map(as=>as.uuid).indexOf(uuid);
 
     if(roomIndex === -1) {
       throw new Error('room did not found');
     }
 
-    if(roomArray[roomIndex].players.length >= 2) {
+    if(roomsArray[roomIndex].players.length >= 2) {
       throw new Error('room is full');
     }
 
-    roomArray[roomIndex].players.push('player');
+    roomsArray[roomIndex].players.push('player');
     res.status(200).json({message: 'succes'});
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+})
+
+app.get('/api/rooms', (req, res, next) => {
+  try {
+    res.status(200).json({ data: { roomsArray } })
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
@@ -109,7 +118,7 @@ io.of('/web-socket/home').on('connection', (socket) => {
       ]
     };
 
-    roomArray.push(data);
+    roomsArray.push(data);
 
     console.log(typeof msg)
     console.log(msg)
@@ -141,7 +150,7 @@ io.of('/web-socket/room').on('connection', (socket) => {
       ]
     };
 
-    roomArray.push(msg.data);
+    roomsArray.push(msg.data);
 
     console.log(typeof msg)
     console.log(msg)
@@ -163,6 +172,10 @@ io.on('connection', (socket) => {
     io.emit(msg.socket, msg.message);
   });
 })
+
+const verifJwtToken = async(token) => {
+  return await jwt.verify(token, secretKey);
+}
 
 server.listen(3001, () => {
   console.log('server running at port 3001');
