@@ -96,7 +96,7 @@ app.get('/api/rooms', (req, res, next) => {
   }
 })
 
-io.of('/web-socket/home').on('connection', (socket) => {
+io.on('connection', (socket) => {
   if(playersArray.indexOf(socket) === -1){
     console.log(playersArray.indexOf(socket))
     console.log('a user connected');
@@ -108,6 +108,14 @@ io.of('/web-socket/home').on('connection', (socket) => {
   });
 
   socket.on('createRoom', (msg) => {
+    const body = {
+      jwtToken = msg.Authorization, // Header jwt {token}
+      roomType: msg.roomType,
+      roomName: msg.roomName
+    }
+
+    const user = verifJwtToken(body.jwtToken);
+
     const data =  {
       status: 'waiting',
       roomType: msg.roomType,
@@ -120,24 +128,11 @@ io.of('/web-socket/home').on('connection', (socket) => {
 
     roomsArray.push(data);
 
-    console.log(typeof msg)
-    console.log(msg)
+    console.log(data)
     if(data.roomtype === 'public'){
       io.emit('createRoom', data);
     }
   })
-})
-
-io.of('/web-socket/room').on('connection', (socket) => {
-  if(playersArray.indexOf(socket) === -1){
-    console.log(playersArray.indexOf(socket))
-    console.log('a user connected');
-    playersArray.push(socket);
-  }
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
 
   socket.on('deleteRoom', (msg) => {
     const data =  {
@@ -160,21 +155,10 @@ io.of('/web-socket/room').on('connection', (socket) => {
   })
 })
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
-
-  socket.on('room', (msg) => {
-    console.log(typeof msg)
-    console.log(msg)
-    io.emit(msg.socket, msg.message);
-  });
-})
-
 const verifJwtToken = async(token) => {
-  return await jwt.verify(token, secretKey);
+  const jwtToken = token.split(' ')[2]; // Header jwt {token}
+
+  return await jwt.verify(jwtToken, secretKey);
 }
 
 server.listen(3001, () => {
