@@ -19,8 +19,10 @@ let roomsArray = [];
 let playersArray = [];
 
 // middleware
-app.set('view engine', 'ejs')
-app.use(cors())
+app.set('view engine', 'ejs');
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded());
 
 app.get('/:roomId', (req, res, next) => {
   try{
@@ -37,6 +39,7 @@ app.get('/users/test', (req, res, next) => {
 
 app.post('/api/users/auth', async(req, res, next) => {
   try {
+    console.log(req.body, req.params, req.query)
     const { username } = req.body;
     const uuid = nanoid(10);
 
@@ -107,14 +110,16 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 
-  socket.on('createRoom', (msg) => {
+  socket.on('createRoom', async (msg) => {
+    console.log('createRoom')
+    console.log(msg)
     const body = {
       jwtToken: msg.Authorization, // Header jwt {token}
       roomType: msg.roomType,
       roomName: msg.roomName
     }
 
-    const user = verifJwtToken(body.jwtToken); // {username, uuid}
+    const user = await verifJwtToken(body.jwtToken); // {username, uuid}
 
     const data =  {
       roomWaiting: true,
@@ -125,11 +130,11 @@ io.on('connection', (socket) => {
         user
       ]
     };
-
+    console.log(data)
     roomsArray.push(data);
 
     console.log(data)
-    if(data.roomtype === 'public'){
+    if(data.roomType === 'public'){
       io.emit('createRoom', data);
     }
   })
