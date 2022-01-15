@@ -128,7 +128,8 @@ io.on('connection', (socket) => {
       roomName: body.roomName,
       players: [
         user
-      ]
+      ],
+      creator: body.jwtToken.split(' ')[2]
     };
     console.log(data)
     roomsArray.push(data);
