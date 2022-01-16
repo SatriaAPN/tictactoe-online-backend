@@ -84,8 +84,28 @@ app.get('/api/rooms/:uuid', (req, res, next) => {
       throw new Error('room is full');
     }
 
+    res.status(200).json({ data: roomsArray[roomIndex] });
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+})
+
+app.get('/api/rooms/join/:uuid', (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+
+    const roomIndex = roomsArray.map(as=>as.uuid).indexOf(uuid);
+
+    if(roomIndex === -1) {
+      throw new Error('room did not found');
+    }
+
+    if(roomsArray[roomIndex].players.length >= 2) {
+      throw new Error('room is full');
+    }
+
     roomsArray[roomIndex].players.push('player');
-    res.status(200).json({message: 'succes'});
+    res.status(200).json({ successJoin: true });
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
