@@ -102,11 +102,11 @@ app.get('/api/rooms/:uuid', (req, res, next) => {
 
 app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
   try {
-    const { uuid } = req.params;
+    const { roomUuid } = req.params;
     const { username, uuid } = req.user;
     
 
-    const roomIndex = roomsArray.map(as=>as.uuid).indexOf(uuid);
+    const roomIndex = roomsArray.map(as=>as.uuid).indexOf(roomUuid);
 
     if(roomIndex === -1) {
       throw new Error('room did not found');
@@ -116,7 +116,7 @@ app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
       throw new Error('room is full');
     }
 
-    roomsArray[roomIndex].players.push('player');
+    roomsArray[roomIndex].players.push({username, uuid});
 
     res.status(200).json({ successJoin: true });
   } catch(err) {
@@ -160,7 +160,10 @@ io.on('connection', (socket) => {
       roomUuid: nanoid(10),
       roomName: body.roomName,
       players: [
-        user
+        {
+          username: user.username,
+          uuid: user.uuid
+        }
       ],
       creator: body.jwtToken.split(' ')[2]
     };
