@@ -23,7 +23,7 @@ app.set('view engine', 'ejs');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   if (!req.headers.authorization) {
     return res.status(403).json({ error: 'No credentials sent!' });
   }
