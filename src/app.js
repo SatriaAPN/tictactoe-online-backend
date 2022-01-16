@@ -80,11 +80,11 @@ app.post('/users', (req, res, next) => {
   }
 })
 
-app.get('/api/rooms/:uuid', (req, res, next) => {
+app.get('/api/rooms/:roomUuid', (req, res, next) => {
   try {
-    const { uuid } = req.params;
+    const { roomUuid } = req.params;
 
-    const roomIndex = roomsArray.map(as=>as.uuid).indexOf(uuid);
+    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(roomUuid);
 
     if(roomIndex === -1) {
       throw new Error('room did not found');
