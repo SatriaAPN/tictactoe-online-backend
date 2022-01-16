@@ -23,6 +23,16 @@ app.set('view engine', 'ejs');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
+app.use((req, res, next) => {
+  if (!req.headers.authorization) {
+    return res.status(403).json({ error: 'No credentials sent!' });
+  }
+
+  const jwtToken = req.headers.authorization.split(' ')[2]; // Header jwt {token}
+
+  req.user = await jwt.verify(jwtToken, secretKey);
+  next();
+})
 
 app.get('/:roomId', (req, res, next) => {
   try{
@@ -90,9 +100,11 @@ app.get('/api/rooms/:uuid', (req, res, next) => {
   }
 })
 
-app.get('/api/rooms/join/:uuid', (req, res, next) => {
+app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
   try {
     const { uuid } = req.params;
+    const { username, uuid } = req.user;
+    
 
     const roomIndex = roomsArray.map(as=>as.uuid).indexOf(uuid);
 
@@ -105,6 +117,7 @@ app.get('/api/rooms/join/:uuid', (req, res, next) => {
     }
 
     roomsArray[roomIndex].players.push('player');
+
     res.status(200).json({ successJoin: true });
   } catch(err) {
     res.status(400).json({ message: err.message });
