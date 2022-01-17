@@ -24,6 +24,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(async (req, res, next) => {
+  if(req.path === '/api/users/auth') return next();
   if (!req.headers.authorization) {
     return res.status(403).json({ error: 'No credentials sent!' });
   }
