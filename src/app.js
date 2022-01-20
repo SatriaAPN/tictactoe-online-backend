@@ -111,9 +111,9 @@ app.get('/api/rooms/:roomUuid', (req, res, next) => {
       throw new Error('room did not found');
     }
 
-    if(roomsArray[roomIndex].players.length >= 2) {
-      throw new Error('room is full');
-    }
+    // if(roomsArray[roomIndex].players.length >= 2) {
+    //   throw new Error('room is full');
+    // }
 
     res.status(200).json({ data: roomsArray[roomIndex] });
   } catch(err) {
