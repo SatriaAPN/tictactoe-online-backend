@@ -101,6 +101,26 @@ app.get('/api/rooms/:roomUuid/capacity', (req, res, next) => {
   }
 })
 
+app.get('/api/rooms/:roomUuid', (req, res, next) => {
+  try {
+    const { roomUuid } = req.params;
+
+    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(roomUuid);
+
+    if(roomIndex === -1) {
+      throw new Error('room did not found');
+    }
+
+    if(roomsArray[roomIndex].players.length >= 2) {
+      throw new Error('room is full');
+    }
+
+    res.status(200).json({ data: roomsArray[roomIndex] });
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+})
+
 app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
@@ -175,6 +195,29 @@ io.on('connection', (socket) => {
     if(data.roomType === 'public'){
       io.emit('createRoom', data);
     }
+  })
+
+  socket.on('joinRoom', async (msg) => {
+    const body = {
+      jwtToken: msg.Authorization,
+      roomUuid: msg.roomUuid
+    };
+
+    const user = await verifJwtToken(body.jwtToken); // {username, uuid}
+
+    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+
+    if(roomIndex === -1) throw new Error('room did not found');
+
+    if(roomsArray[roomIndex].players.length >= 2) throw new Error('the room is full');
+
+    roomsArray[roomIndex].players.push(user);
+
+    const data = {
+      data: roomsArray[roomIndex]
+    }
+
+    socket.emit(`joinRoom/${body.roomUuid}`, data);
   })
 
   socket.on('deleteRoom', (msg) => {
