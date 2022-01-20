@@ -217,7 +217,7 @@ io.on('connection', (socket) => {
       data: roomsArray[roomIndex]
     }
 
-    socket.emit(`joinRoom/${body.roomUuid}`, data);
+    socket.emit(`joinRoom`, data);
   })
 
   socket.on('deleteRoom', (msg) => {
