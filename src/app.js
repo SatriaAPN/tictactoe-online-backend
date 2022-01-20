@@ -81,7 +81,7 @@ app.post('/users', (req, res, next) => {
   }
 })
 
-app.get('/api/rooms/:roomUuid', (req, res, next) => {
+app.get('/api/rooms/:roomUuid/capacity', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
