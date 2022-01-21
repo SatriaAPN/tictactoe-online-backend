@@ -239,6 +239,55 @@ io.on('connection', (socket) => {
       io.emit(roomId, msg);
     }
   })
+
+  socket.on('leaveRoom', async(msg) => {
+    console.log('a player has leave a room ');
+
+    const body = {
+      jwtToken: msg.Authorization,
+      roomUuid: msg.roomUuid
+    };
+
+    const user = await verifJwtToken(body.jwtToken); // {username, uuid}
+    
+    // find the room in the rooms array by uuid
+    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+
+    // check if the room is found
+    if(roomIndex === -1) throw new Error('room did not found');
+
+    // find the player that left in the room's players array
+    const playerIndex = roomsArray[roomIndex].players.map(as=>as.uuid).indexOf(user.uuid);
+
+    // check if the player exist in the room's players array
+    if(playerIndex === -1) throw new Error('player did not found');
+
+    // remove the player that left from the room's players array
+    roomsArray[roomIndex].players.splice(playerIndex, 1);
+
+    // check if the room's players is empty or not
+    if (roomsArray[roomIndex].players.length !== 0){
+      const data = {
+        data: {
+          players: roomsArray[roomIndex].players
+        }
+      };
+
+      io.emit(`room/${body.roomUuid}/playerLeave`, data);
+    } else {
+      // delete the empty room from the roomsArray
+      roomsArray.splice(roomIndex, 1);
+
+      const data = {
+        data: {
+          roomsArray: roomsArray
+        }
+      }
+
+      // emit the message to listener in websocket
+      io.emit('deleteRoom', data);
+    }
+  })
 })
 
 const verifJwtToken = async(token) => {
