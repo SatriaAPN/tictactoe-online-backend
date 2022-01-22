@@ -176,14 +176,15 @@ io.on('connection', (socket) => {
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
 
     const data =  {
-      roomWaiting: true,
+      roomPlaying: false,
       roomType: body.roomType,
       roomUuid: nanoid(10),
       roomName: body.roomName,
       players: [
         {
           username: user.username,
-          uuid: user.uuid
+          uuid: user.uuid,
+          ready: false
         }
       ],
       creator: body.jwtToken.split(' ')[2]
@@ -211,7 +212,13 @@ io.on('connection', (socket) => {
 
     if(roomsArray[roomIndex].players.length >= 2) throw new Error('the room is full');
 
-    roomsArray[roomIndex].players.push(user);
+    const player = {
+      username: user.username,
+      uuid: user.uuid,
+      ready: false
+    }
+
+    roomsArray[roomIndex].players.push(player);
 
     const data = {
       data: roomsArray[roomIndex]
@@ -287,6 +294,50 @@ io.on('connection', (socket) => {
       // emit the message to listener in websocket
       io.emit('deleteRoom', data);
     }
+  })
+
+  socket.on('playerReady', async(msg) => {
+    console.log('a player is ready ');
+
+    const body = {
+      jwtToken: msg.Authorization,
+      roomUuid: msg.roomUuid,
+      userReady: msg.ready
+    };
+
+    const user = await verifJwtToken(body.jwtToken); // {username, uuid}
+    
+    // find the room in the rooms array by uuid
+    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+
+    // check if the room is found
+    if(roomIndex === -1) throw new Error('room did not found');
+
+    // find the player that left in the room's players array
+    const playerIndex = roomsArray[roomIndex].players.map(as=>as.uuid).indexOf(user.uuid);
+
+    // check if the player exist in the room's players array
+    if(playerIndex === -1) throw new Error('player did not found');
+
+    // update the player's ready status
+    roomsArray[roomIndex].players[playerIndex].ready = userReady;
+
+    // check if total players are 2 
+    if(roomsArray[roomIndex].players[playerIndex]==2){
+      // check if all players are ready
+      let allReady;
+      for(let i=0; i<2; i++) {
+        allReady = roomsArray[roomIndex].players[playerIndex].ready === true;
+      }
+      // if all players ready
+      if (allReady) {
+        // change roomPLaying status to true
+        roomsArray[roomIndex].roomPlaying = true;
+      }
+    }
+
+    // emit the new array's data to the frontend
+    io.emit( `room/${body.roomUuid}/playerReady`, roomsArray[roomIndex]);
   })
 })
 
