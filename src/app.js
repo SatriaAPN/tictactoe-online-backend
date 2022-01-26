@@ -304,7 +304,7 @@ console.log(roomsArray)
     const body = {
       jwtToken: msg.Authorization,
       roomUuid: msg.roomUuid,
-      userReady: msg.ready.toLowerCase() === 'true' 
+      userReady: msg.ready
     };
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
