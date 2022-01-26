@@ -325,7 +325,7 @@ console.log(roomsArray)
     roomsArray[roomIndex].players[playerIndex].ready = body.userReady;
 
     // check if total players are 2 
-    if(roomsArray[roomIndex].players[playerIndex]==2){
+    if(roomsArray[roomIndex].players.length === 2){
       // check if all players are ready
       let allReady = [];
       for(let i=0; i<2; i++) {
