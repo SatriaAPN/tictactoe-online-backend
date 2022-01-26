@@ -322,7 +322,7 @@ console.log(roomsArray)
     if(playerIndex === -1) throw new Error('player did not found');
 
     // update the player's ready status
-    roomsArray[roomIndex].players[playerIndex].ready = userReady;
+    roomsArray[roomIndex].players[playerIndex].ready = body.userReady;
 
     // check if total players are 2 
     if(roomsArray[roomIndex].players[playerIndex]==2){
