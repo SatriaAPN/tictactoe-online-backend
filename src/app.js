@@ -271,9 +271,10 @@ io.on('connection', (socket) => {
 
     // remove the player that left from the room's players array
     roomsArray[roomIndex].players.splice(playerIndex, 1);
-
+console.log(roomsArray);
     // check if the room's players is empty or not
     if (roomsArray[roomIndex].players.length !== 0){
+      console.log('true')
       const data = {
         data: {
           players: roomsArray[roomIndex].players
@@ -282,9 +283,10 @@ io.on('connection', (socket) => {
 
       io.emit(`room/${body.roomUuid}/playerLeave`, data);
     } else {
+      console.log('false')
       // delete the empty room from the roomsArray
       roomsArray.splice(roomIndex, 1);
-
+console.log(roomsArray)
       const data = {
         data: {
           roomsArray: roomsArray
@@ -302,7 +304,7 @@ io.on('connection', (socket) => {
     const body = {
       jwtToken: msg.Authorization,
       roomUuid: msg.roomUuid,
-      userReady: msg.ready
+      userReady: msg.ready.toLowerCase() === 'true' 
     };
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
@@ -325,15 +327,19 @@ io.on('connection', (socket) => {
     // check if total players are 2 
     if(roomsArray[roomIndex].players[playerIndex]==2){
       // check if all players are ready
-      let allReady;
+      let allReady = [];
       for(let i=0; i<2; i++) {
-        allReady = roomsArray[roomIndex].players[playerIndex].ready === true;
+        allReady.push(roomsArray[roomIndex].players[i].ready);
       }
       // if all players ready
-      if (allReady) {
+      if (allReady[0] && allReady[1]) {
         // change roomPLaying status to true
         roomsArray[roomIndex].roomPlaying = true;
+      } else {
+        roomsArray[roomIndex].roomPlaying = false;
       }
+    } else {
+      roomsArray[roomIndex].roomPlaying = false;
     }
 
     // emit the new array's data to the frontend
