@@ -17,6 +17,7 @@ const secretKey = 'thisIsSecretKey';
 // data array
 let roomsArray = [];
 let playersArray = [];
+let roomsPlayingArray = []
 
 // middleware
 app.set('view engine', 'ejs');
@@ -165,8 +166,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('createRoom', async (msg) => {
-    console.log('createRoom')
-    console.log(msg)
+    console.log('a room created');
     const body = {
       jwtToken: msg.Authorization, // Header jwt {token}
       roomType: msg.roomType,
@@ -182,6 +182,7 @@ io.on('connection', (socket) => {
       roomName: body.roomName,
       players: [
         {
+          token: body.jwtToken,
           username: user.username,
           uuid: user.uuid,
           ready: false
@@ -213,6 +214,7 @@ io.on('connection', (socket) => {
     if(roomsArray[roomIndex].players.length >= 2) throw new Error('the room is full');
 
     const player = {
+      token: body.jwtToken,
       username: user.username,
       uuid: user.uuid,
       ready: false
@@ -271,7 +273,7 @@ io.on('connection', (socket) => {
 
     // remove the player that left from the room's players array
     roomsArray[roomIndex].players.splice(playerIndex, 1);
-console.log(roomsArray);
+
     // check if the room's players is empty or not
     if (roomsArray[roomIndex].players.length !== 0){
       console.log('true')
@@ -286,7 +288,7 @@ console.log(roomsArray);
       console.log('false')
       // delete the empty room from the roomsArray
       roomsArray.splice(roomIndex, 1);
-console.log(roomsArray)
+
       const data = {
         data: {
           roomsArray: roomsArray
@@ -335,6 +337,18 @@ console.log(roomsArray)
       if (allReady[0] && allReady[1]) {
         // change roomPLaying status to true
         roomsArray[roomIndex].roomPlaying = true;
+        // create new data in roomPLaying array
+        roomsPlayingArray.push({
+          roomUuid: body.roomUuid,
+          tictactoeArray: [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+          ],
+          playerWin: null,
+          playerTurn: roomsArray[roomIndex].players[0].token,
+          winIndex: []
+        })
       } else {
         roomsArray[roomIndex].roomPlaying = false;
       }
@@ -345,12 +359,83 @@ console.log(roomsArray)
     // emit the new array's data to the frontend
     io.emit( `room/${body.roomUuid}/playerReady`, roomsArray[roomIndex]);
   })
+
+  socket.on('playerMove', async(msg) => {
+    console.log('a player is moving ');
+
+    const body = {
+      jwtToken: msg.Authorization,
+      roomUuid: msg.roomUuid,
+      userMove: msg.moveIndex //[1,1]
+    };
+
+    const user = await verifJwtToken(body.jwtToken); // {username, uuid}
+    
+    // find the room in the rooms array by uuid
+    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+
+    // check if the room is found
+    if(roomIndex === -1) throw new Error('room did not found');
+
+    // find the room data in the rooms playing array by uuid
+    const roomPlayingIndex = roomsPlayingArray.map(as=>roomUuid).indexOf(body.roomUuid);
+
+    if(roomPlayingIndex === -1) throw new Error('room playing did not found');
+
+    // check if the tictactoe index has been occupied by another player
+    if(roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
+      throw new Error('the index space has been occupied by another player');
+    }
+
+    // insert the player move index into the roomPlayingArray
+    roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken;
+
+    // change the player turn
+    if(roomsPlayingArray[roomPlayingIndex].playerTurn === roomsPlayingArray[roomPlayingIndex].players[0].token) {
+      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsPlayingArray[roomPlayingIndex].players[1].token;
+    } else {
+      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsPlayingArray[roomPlayingIndex].players[0].token; 
+    }
+
+    // check if any user win
+    checkIfPlayerWin(body.jwtToken, roomPlayingIndex)
+
+    // emit the new array's data to the frontend
+    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsArray[roomIndex]);
+
+    // if a player win, delete the roomPlaying from the array
+    if(roomsPlayingArray[roomPlayingIndex].playerWin != null) {
+      roomsPlayingArray.splice(roomPlayingIndex, 1);
+    }
+  })
 })
 
 const verifJwtToken = async(token) => {
   const jwtToken = token.split(' ')[2]; // Header jwt {token}
 
   return await jwt.verify(jwtToken, secretKey);
+}
+
+const checkIfPlayerWin = async(userToken, roomPlayingIndex) => {
+  const roomPlaying = roomsPlayingArray[roomPlayingIndex];
+  const tictactoeArray = roomPlaying.tictactoeArray;
+
+  // check row
+  for(let i=0; i<3; i++) {
+    let rowWin = [];
+    let countRow = 0;
+    for(let j=0; j<3; j++) {
+      if(tictactoeArray[i][j] === userToken) {
+        countRow++;
+        rowWin.push([[i, j]]);
+      }
+    }
+    if(countRow === 3) {
+      return roomPlaying.winIndex = rowWin;
+    };
+  }
+
+  // check column
 }
 
 server.listen(3001, () => {
