@@ -154,6 +154,14 @@ app.get('/api/rooms', (req, res, next) => {
   }
 })
 
+app.get('/api/rooms', (req, res, next) => {
+  try {
+    res.status(200).json({ data: { roomsArray } })
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+})
+
 io.on('connection', (socket) => {
   if(playersArray.indexOf(socket) === -1){
     console.log(playersArray.indexOf(socket))
