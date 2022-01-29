@@ -284,7 +284,6 @@ io.on('connection', (socket) => {
 
     // check if the room's players is empty or not
     if (roomsArray[roomIndex].players.length !== 0){
-      console.log('true')
       const data = {
         data: {
           players: roomsArray[roomIndex].players
@@ -293,7 +292,6 @@ io.on('connection', (socket) => {
 
       io.emit(`room/${body.roomUuid}/playerLeave`, data);
     } else {
-      console.log('false')
       // delete the empty room from the roomsArray
       roomsArray.splice(roomIndex, 1);
 
