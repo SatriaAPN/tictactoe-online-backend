@@ -190,7 +190,7 @@ io.on('connection', (socket) => {
       roomName: body.roomName,
       players: [
         {
-          token: body.jwtToken,
+          token: body.jwtToken.split(' ')[2],
           username: user.username,
           uuid: user.uuid,
           ready: false
@@ -222,7 +222,7 @@ io.on('connection', (socket) => {
     if(roomsArray[roomIndex].players.length >= 2) throw new Error('the room is full');
 
     const player = {
-      token: body.jwtToken,
+      token: body.jwtToken.split(' ')[2],
       username: user.username,
       uuid: user.uuid,
       ready: false
@@ -398,7 +398,7 @@ console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
     }
 
     // insert the player move index into the roomPlayingArray
-    roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken.split('')[2];
+    roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken.split(' ')[2];
 
     // change the player turn
     if(roomsPlayingArray[roomPlayingIndex].playerTurn === roomsArray[roomIndex].players[0].token) {
