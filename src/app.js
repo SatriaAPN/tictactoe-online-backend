@@ -375,7 +375,7 @@ io.on('connection', (socket) => {
       userMove: msg.moveIndex //[1,1]
     };
 
-    console.log(body);
+    console.log('body', body);
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
     
@@ -389,6 +389,8 @@ io.on('connection', (socket) => {
     const roomPlayingIndex = roomsPlayingArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
 
     if(roomPlayingIndex === -1) throw new Error('room playing did not found');
+
+console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
 
     // check if the tictactoe index has been occupied by another player
     if(roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
