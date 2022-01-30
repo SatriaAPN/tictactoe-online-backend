@@ -398,7 +398,7 @@ console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
     }
 
     // insert the player move index into the roomPlayingArray
-    roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken;
+    roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken.split('')[2];
 
     // change the player turn
     if(roomsPlayingArray[roomPlayingIndex].playerTurn === roomsArray[roomIndex].players[0].token) {
