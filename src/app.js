@@ -375,6 +375,8 @@ io.on('connection', (socket) => {
       userMove: msg.moveIndex //[1,1]
     };
 
+    console.log(body);
+
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
     
     // find the room in the rooms array by uuid
@@ -384,7 +386,7 @@ io.on('connection', (socket) => {
     if(roomIndex === -1) throw new Error('room did not found');
 
     // find the room data in the rooms playing array by uuid
-    const roomPlayingIndex = roomsPlayingArray.map(as=>roomUuid).indexOf(body.roomUuid);
+    const roomPlayingIndex = roomsPlayingArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
 
     if(roomPlayingIndex === -1) throw new Error('room playing did not found');
 
@@ -404,7 +406,7 @@ io.on('connection', (socket) => {
     }
 
     // check if any user win
-    checkIfPlayerWin(body.jwtToken, roomPlayingIndex)
+    // checkIfPlayerWin(body.jwtToken, roomPlayingIndex)
 
     // emit the new array's data to the frontend
     io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsArray[roomIndex]);
