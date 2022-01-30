@@ -411,7 +411,7 @@ console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
     // checkIfPlayerWin(body.jwtToken, roomPlayingIndex)
 
     // emit the new array's data to the frontend
-    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsArray[roomIndex]);
+    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingArray[roomPlayingIndex]);
 
     // if a player win, delete the roomPlaying from the array
     if(roomsPlayingArray[roomPlayingIndex].playerWin != null) {
