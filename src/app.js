@@ -401,10 +401,10 @@ console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
     roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken;
 
     // change the player turn
-    if(roomsPlayingArray[roomPlayingIndex].playerTurn === roomsPlayingArray[roomPlayingIndex].players[0].token) {
-      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsPlayingArray[roomPlayingIndex].players[1].token;
+    if(roomsPlayingArray[roomPlayingIndex].playerTurn === roomsArray[roomIndex].players[0].token) {
+      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsArray[roomIndex].players[1].token;
     } else {
-      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsPlayingArray[roomPlayingIndex].players[0].token; 
+      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsArray[roomIndex].players[0].token; 
     }
 
     // check if any user win
