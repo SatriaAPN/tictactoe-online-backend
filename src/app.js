@@ -162,6 +162,22 @@ app.get('/api/rooms', (req, res, next) => {
   }
 })
 
+app.get('/api/room/:roomUuid/playing', (req, res, next) => {
+  try {
+    const { roomUuid } = req.params;
+
+    const roomsPlayingIndex = roomsPlayingArray.map(as=>as.uuid).indexOf(roomUuid);
+
+    if(roomsPlayingIndex === -1) {
+      throw new Error('room did not found');
+    }
+
+    res.status(200).json({ data: { roomPlayingData: roomsPlayingArray[roomsPlayingIndex] } })
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+})
+
 io.on('connection', (socket) => {
   if(playersArray.indexOf(socket) === -1){
     console.log(playersArray.indexOf(socket))
