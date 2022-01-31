@@ -167,7 +167,8 @@ app.get('/api/room/:roomUuid/playing', (req, res, next) => {
     const { roomUuid } = req.params;
 
     const roomsPlayingIndex = roomsPlayingArray.map(as=>as.uuid).indexOf(roomUuid);
-
+console.log(roomsPlayingArray)
+console.log(roomsPlayingIndex)
     if(roomsPlayingIndex === -1) {
       throw new Error('room did not found');
     }
