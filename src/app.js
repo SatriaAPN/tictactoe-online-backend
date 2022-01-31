@@ -165,7 +165,7 @@ app.get('/api/rooms', (req, res, next) => {
 app.get('/api/room/:roomUuid/playing', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
-
+console.log(roomUuid)
     const roomsPlayingIndex = roomsPlayingArray.map(as=>as.uuid).indexOf(roomUuid);
 console.log(roomsPlayingArray)
 console.log(roomsPlayingIndex)
