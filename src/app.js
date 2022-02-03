@@ -463,6 +463,8 @@ const checkIfPlayerWin = async(userToken, roomPlayingIndex) => {
   }
 
   // check column
+
+  // check diagonal
 }
 
 server.listen(3001, () => {
