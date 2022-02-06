@@ -394,7 +394,7 @@ io.on('connection', (socket) => {
 
     console.log('body', body);
 
-    const user = await verifJwtToken(body.jwtToken); // {username, uuid}
+    // const user = await verifJwtToken(body.jwtToken); // {username, uuid}
     
     // find the room in the rooms array by uuid
     const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
