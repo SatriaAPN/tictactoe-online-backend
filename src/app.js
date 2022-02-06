@@ -425,7 +425,7 @@ console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
     }
 
     // check if any user win
-    // checkIfPlayerWin(body.jwtToken, roomPlayingIndex)
+    // checkIfPlayerWin(body.jwtToken.split('')[2], roomPlayingIndex)
 
     // emit the new array's data to the frontend
     io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingArray[roomPlayingIndex]);
@@ -447,13 +447,21 @@ const checkIfPlayerWin = async(userToken, roomPlayingIndex) => {
   const roomPlaying = roomsPlayingArray[roomPlayingIndex];
   const tictactoeArray = roomPlaying.tictactoeArray;
 
-  // check row
   for(let i=0; i<3; i++) {
     let rowWin = [];
     let countRow = 0;
     for(let j=0; j<3; j++) {
+
+    }
+  }
+
+  // check row
+  for(let i=0; i<3; i++) {
+    let rowWin = [];
+    let countColumn = 0;
+    for(let j=0; j<3; j++) {
       if(tictactoeArray[i][j] === userToken) {
-        countRow++;
+        countColumn++;
         rowWin.push([[i, j]]);
       }
     }
@@ -461,6 +469,13 @@ const checkIfPlayerWin = async(userToken, roomPlayingIndex) => {
       return roomPlaying.winIndex = rowWin;
     };
   }
+  if(
+    tictactoeArray[0][0] === userToken
+    && tictactoeArray[0][1] === userToken
+    && tictactoeArray[0][2] === userToken
+    ) {
+
+    }
 
   // check column
 
