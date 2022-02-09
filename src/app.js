@@ -16,6 +16,7 @@ const secretKey = 'thisIsSecretKey';
 
 // data array
 let roomsArray = [];
+let roomsObject = {};
 let playersArray = [];
 let roomsPlayingArray = []
 
@@ -86,17 +87,18 @@ app.get('/api/rooms/:roomUuid/capacity', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
-    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(roomUuid);
+    // const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(roomUuid);
+    const room = roomsObject[roomUuid];
 
-    if(roomIndex === -1) {
+    if(!room) {
       throw new Error('room did not found');
     }
 
-    if(roomsArray[roomIndex].players.length >= 2) {
+    if(room.players.length >= 2) {
       throw new Error('room is full');
     }
 
-    res.status(200).json({ data: roomsArray[roomIndex] });
+    res.status(200).json({ data: room });
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
@@ -106,9 +108,9 @@ app.get('/api/rooms/:roomUuid', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
-    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(roomUuid);
+    const room = roomsObject[roomUuid];
 
-    if(roomIndex === -1) {
+    if(!room) {
       throw new Error('room did not found');
     }
 
@@ -116,7 +118,7 @@ app.get('/api/rooms/:roomUuid', (req, res, next) => {
     //   throw new Error('room is full');
     // }
 
-    res.status(200).json({ data: roomsArray[roomIndex] });
+    res.status(200).json({ data: room });
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
@@ -126,11 +128,10 @@ app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
     const { username, uuid } = req.user;
-    
 
-    const roomIndex = roomsArray.map(as=>as.uuid).indexOf(roomUuid);
+    const room = roomsObject[roomUuid];
 
-    if(roomIndex === -1) {
+    if(!room) {
       throw new Error('room did not found');
     }
 
@@ -148,6 +149,8 @@ app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
 
 app.get('/api/rooms', (req, res, next) => {
   try {
+    const roomsArray = Object.values(roomsObject);
+
     res.status(200).json({ data: { roomsArray } })
   } catch(err) {
     res.status(400).json({ message: err.message });
@@ -156,6 +159,8 @@ app.get('/api/rooms', (req, res, next) => {
 
 app.get('/api/rooms', (req, res, next) => {
   try {
+    const roomsArray = Object.values(roomsObject);
+
     res.status(200).json({ data: { roomsArray } })
   } catch(err) {
     res.status(400).json({ message: err.message });
@@ -216,7 +221,8 @@ io.on('connection', (socket) => {
       creator: body.jwtToken.split(' ')[2]
     };
     console.log(data)
-    roomsArray.push(data);
+    roomsObject[data.roomUuid] = data;
+    // roomsArray.push(data);
 
     console.log(data)
     if(data.roomType === 'public'){
@@ -232,11 +238,17 @@ io.on('connection', (socket) => {
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
 
-    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+    // const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
 
-    if(roomIndex === -1) throw new Error('room did not found');
+    // if(roomIndex === -1) throw new Error('room did not found');
 
-    if(roomsArray[roomIndex].players.length >= 2) throw new Error('the room is full');
+    const room = roomsObject[body.roomUuid];
+
+    if(!room) {
+      throw new Error('room did not found');
+    }
+
+    if(room.players.length >= 2) throw new Error('the room is full');
 
     const player = {
       token: body.jwtToken.split(' ')[2],
@@ -245,13 +257,16 @@ io.on('connection', (socket) => {
       ready: false
     }
 
-    roomsArray[roomIndex].players.push(player);
+    roomsObject[roomUuid].players.push(player);
 
-    const data = {
-      data: roomsArray[roomIndex]
+    
+    // roomsArray[roomIndex].players.push(player);
+
+    const result = {
+      data: roomsObject[roomUuid]
     }
 
-    io.emit(`joinRoom/${body.roomUuid}`, data);
+    io.emit(`joinRoom/${body.roomUuid}`, result);
   })
 
   socket.on('deleteRoom', (msg) => {
@@ -284,37 +299,43 @@ io.on('connection', (socket) => {
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
     
-    // find the room in the rooms array by uuid
-    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+    // // find the room in the rooms array by uuid
+    // const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
 
-    // check if the room is found
-    if(roomIndex === -1) throw new Error('room did not found');
+    // // check if the room is found
+    // if(roomIndex === -1) throw new Error('room did not found');
+
+    if(!roomsObject[body.roomUuid]) {
+      throw new Error('room did not found');
+    }
 
     // find the player that left in the room's players array
-    const playerIndex = roomsArray[roomIndex].players.map(as=>as.uuid).indexOf(user.uuid);
+    const playerIndex = roomsObject[roomUuid].players.map(as=>as.uuid).indexOf(user.uuid);
 
     // check if the player exist in the room's players array
     if(playerIndex === -1) throw new Error('player did not found');
 
     // remove the player that left from the room's players array
-    roomsArray[roomIndex].players.splice(playerIndex, 1);
+    roomsObject[roomUuid].players.splice(playerIndex, 1);
 
     // check if the room's players is empty or not
-    if (roomsArray[roomIndex].players.length !== 0){
+    if (roomsObject[roomUuid].players.length !== 0){
       const data = {
         data: {
-          players: roomsArray[roomIndex].players
+          players: roomsObject[roomUuid].players
         }
       };
 
       io.emit(`room/${body.roomUuid}/playerLeave`, data);
     } else {
       // delete the empty room from the roomsArray
-      roomsArray.splice(roomIndex, 1);
+      delete roomsObject[roomUuid];
+
+      const roomsArray = Object.values(roomsObject);
 
       const data = {
         data: {
-          roomsArray: roomsArray
+          roomsArray
         }
       }
 
@@ -334,32 +355,30 @@ io.on('connection', (socket) => {
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
     
-    // find the room in the rooms array by uuid
-    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
-
-    // check if the room is found
-    if(roomIndex === -1) throw new Error('room did not found');
+    if(!roomsObject[body.roomUuid]) {
+      throw new Error('room did not found');
+    }
 
     // find the player that left in the room's players array
-    const playerIndex = roomsArray[roomIndex].players.map(as=>as.uuid).indexOf(user.uuid);
+    const playerIndex = roomsObject[body.roomUuid].players.map(as=>as.uuid).indexOf(user.uuid);
 
     // check if the player exist in the room's players array
     if(playerIndex === -1) throw new Error('player did not found');
 
     // update the player's ready status
-    roomsArray[roomIndex].players[playerIndex].ready = body.userReady;
+    roomsObject[body.roomUuid].players[playerIndex].ready = body.userReady;
 
     // check if total players are 2 
-    if(roomsArray[roomIndex].players.length === 2){
+    if(roomsObject[body.roomUuid].players.length === 2){
       // check if all players are ready
       let allReady = [];
       for(let i=0; i<2; i++) {
-        allReady.push(roomsArray[roomIndex].players[i].ready);
+        allReady.push(roomsObject[body.roomUuid].players[i].ready);
       }
       // if all players ready
       if (allReady[0] && allReady[1]) {
         // change roomPLaying status to true
-        roomsArray[roomIndex].roomPlaying = true;
+        roomsObject[body.roomUuid].roomPlaying = true;
         // create new data in roomPLaying array
         roomsPlayingArray.push({
           roomUuid: body.roomUuid,
@@ -369,18 +388,18 @@ io.on('connection', (socket) => {
             [0, 0, 0]
           ],
           playerWin: null,
-          playerTurn: roomsArray[roomIndex].players[0].token,
+          playerTurn: roomsObject[body.roomUuid].players[0].token,
           winIndex: []
         })
       } else {
-        roomsArray[roomIndex].roomPlaying = false;
+        roomsObject[body.roomUuid].roomPlaying = false;
       }
     } else {
-      roomsArray[roomIndex].roomPlaying = false;
+      roomsObject[body.roomUuid].roomPlaying = false;
     }
 
     // emit the new array's data to the frontend
-    io.emit( `room/${body.roomUuid}/playerReady`, roomsArray[roomIndex]);
+    io.emit( `room/${body.roomUuid}/playerReady`, roomsObject[body.roomUuid]);
   })
 
   socket.on('playerMove', async(msg) => {
@@ -396,11 +415,10 @@ io.on('connection', (socket) => {
 
     // const user = await verifJwtToken(body.jwtToken); // {username, uuid}
     
-    // find the room in the rooms array by uuid
-    const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
-
-    // check if the room is found
-    if(roomIndex === -1) throw new Error('room did not found');
+    // find and check if the room is found
+    if(!roomsObject[body.roomUuid]) {
+      throw new Error('room did not found');
+    }
 
     // find the room data in the rooms playing array by uuid
     const roomPlayingIndex = roomsPlayingArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
