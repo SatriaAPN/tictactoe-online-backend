@@ -19,6 +19,7 @@ let roomsArray = [];
 let roomsObject = {};
 let playersArray = [];
 let roomsPlayingArray = []
+let roomsPlayingObject = {};
 
 // middleware
 app.set('view engine', 'ejs');
@@ -87,18 +88,15 @@ app.get('/api/rooms/:roomUuid/capacity', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
-    // const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(roomUuid);
-    const room = roomsObject[roomUuid];
-
-    if(!room) {
+    if(!roomsObject[roomUuid]) {
       throw new Error('room did not found');
     }
 
-    if(room.players.length >= 2) {
+    if(roomsObject[roomUuid].players.length >= 2) {
       throw new Error('room is full');
     }
 
-    res.status(200).json({ data: room });
+    res.status(200).json({ data: roomsObject[roomUuid] });
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
@@ -108,17 +106,11 @@ app.get('/api/rooms/:roomUuid', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
-    const room = roomsObject[roomUuid];
-
-    if(!room) {
+    if(!roomsObject[roomUuid]) {
       throw new Error('room did not found');
     }
 
-    // if(roomsArray[roomIndex].players.length >= 2) {
-    //   throw new Error('room is full');
-    // }
-
-    res.status(200).json({ data: room });
+    res.status(200).json({ data: roomsObject[roomUuid] });
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
@@ -129,17 +121,15 @@ app.get('/api/rooms/join/:roomUuid', (req, res, next) => {
     const { roomUuid } = req.params;
     const { username, uuid } = req.user;
 
-    const room = roomsObject[roomUuid];
-
-    if(!room) {
+    if(!roomsObject[roomUuid]) {
       throw new Error('room did not found');
     }
 
-    if(roomsArray[roomIndex].players.length >= 2) {
+    if(roomsObject[roomUuid].players.length >= 2) {
       throw new Error('room is full');
     }
 
-    roomsArray[roomIndex].players.push({username, uuid});
+    roomsObject[roomUuid].players.push({username, uuid});
 
     res.status(200).json({ successJoin: true });
   } catch(err) {
@@ -170,15 +160,10 @@ app.get('/api/rooms', (req, res, next) => {
 app.get('/api/room/:roomUuid/playing', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
-console.log(roomUuid)
-    const roomsPlayingIndex = roomsPlayingArray.map(as=>as.roomUuid).indexOf(roomUuid);
-console.log(roomsPlayingArray)
-console.log(roomsPlayingIndex)
-    if(roomsPlayingIndex === -1) {
-      throw new Error('room did not found');
-    }
 
-    res.status(200).json({ data: { roomPlayingData: roomsPlayingArray[roomsPlayingIndex] } })
+    if(!roomsPlayingObject[roomUuid]) throw new Error('room did not found');
+
+    res.status(200).json({ data: { roomPlayingData: roomsPlayingObject[roomUuid] } })
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
@@ -212,17 +197,16 @@ io.on('connection', (socket) => {
       roomName: body.roomName,
       players: [
         {
-          token: body.jwtToken.split(' ')[2],
+          token: user.token,
           username: user.username,
           uuid: user.uuid,
           ready: false
         }
       ],
-      creator: body.jwtToken.split(' ')[2]
+      creator: user.token
     };
     console.log(data)
     roomsObject[data.roomUuid] = data;
-    // roomsArray.push(data);
 
     console.log(data)
     if(data.roomType === 'public'){
@@ -238,29 +222,18 @@ io.on('connection', (socket) => {
 
     const user = await verifJwtToken(body.jwtToken); // {username, uuid}
 
-    // const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
+    if(!roomsObject[body.roomUuid]) throw new Error('room did not found');
 
-    // if(roomIndex === -1) throw new Error('room did not found');
-
-    const room = roomsObject[body.roomUuid];
-
-    if(!room) {
-      throw new Error('room did not found');
-    }
-
-    if(room.players.length >= 2) throw new Error('the room is full');
+    if(roomsObject[body.roomUuid].players.length >= 2) throw new Error('the room is full');
 
     const player = {
-      token: body.jwtToken.split(' ')[2],
+      token: user.token,
       username: user.username,
       uuid: user.uuid,
       ready: false
     }
 
     roomsObject[roomUuid].players.push(player);
-
-    
-    // roomsArray[roomIndex].players.push(player);
 
     const result = {
       data: roomsObject[roomUuid]
@@ -379,8 +352,9 @@ io.on('connection', (socket) => {
       if (allReady[0] && allReady[1]) {
         // change roomPLaying status to true
         roomsObject[body.roomUuid].roomPlaying = true;
+
         // create new data in roomPLaying array
-        roomsPlayingArray.push({
+        roomsPlayingObject[body.roomUuid] = {
           roomUuid: body.roomUuid,
           tictactoeArray: [
             [0, 0, 0],
@@ -390,7 +364,7 @@ io.on('connection', (socket) => {
           playerWin: null,
           playerTurn: roomsObject[body.roomUuid].players[0].token,
           winIndex: []
-        })
+        };
       } else {
         roomsObject[body.roomUuid].roomPlaying = false;
       }
@@ -420,37 +394,32 @@ io.on('connection', (socket) => {
       throw new Error('room did not found');
     }
 
-    // find the room data in the rooms playing array by uuid
-    const roomPlayingIndex = roomsPlayingArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
-
-    if(roomPlayingIndex === -1) throw new Error('room playing did not found');
-
-console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
+    if(!roomsPlayingObject[body.roomUuid]) throw new Error('room playing did not found');
 
     // check if the tictactoe index has been occupied by another player
-    if(roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
+    if(roomsPlayingObject[body.roomUuid].tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
       throw new Error('the index space has been occupied by another player');
     }
 
     // insert the player move index into the roomPlayingArray
-    roomsPlayingArray[roomPlayingIndex].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken.split(' ')[2];
+    roomsPlayingObject[body.roomUuid].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken.split(' ')[2];
 
     // change the player turn
-    if(roomsPlayingArray[roomPlayingIndex].playerTurn === roomsArray[roomIndex].players[0].token) {
-      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsArray[roomIndex].players[1].token;
+    if(roomsPlayingObject[body.roomUuid].playerTurn === roomsObject[body.roomUuid].players[0].token) {
+      roomsPlayingObject[body.roomUuid].playerTurn = roomsObject[body.roomUuid].players[1].token;
     } else {
-      roomsPlayingArray[roomPlayingIndex].playerTurn = roomsArray[roomIndex].players[0].token; 
+      roomsPlayingObject[body.roomUuid].playerTurn = roomsObject[body.roomUuid].players[0].token; 
     }
 
     // check if any user win
     // checkIfPlayerWin(body.jwtToken.split('')[2], roomPlayingIndex)
 
     // emit the new array's data to the frontend
-    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingArray[roomPlayingIndex]);
+    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingObject[body.roomUuid]);
 
     // if a player win, delete the roomPlaying from the array
-    if(roomsPlayingArray[roomPlayingIndex].playerWin != null) {
-      roomsPlayingArray.splice(roomPlayingIndex, 1);
+    if(roomsPlayingObject[body.roomUuid].playerWin != null) {
+      delete roomsPlayingObject[body.roomUuid];
     }
   })
 })
@@ -458,7 +427,10 @@ console.log('room: ', roomsPlayingArray[roomPlayingIndex]);
 const verifJwtToken = async(token) => {
   const jwtToken = token.split(' ')[2]; // Header jwt {token}
 
-  return await jwt.verify(jwtToken, secretKey);
+  const userData = await jwt.verify(jwtToken, secretKey);
+  userData.token = jwtToken;
+  
+  return userData;
 }
 
 const checkIfPlayerWin = async(userToken, roomPlayingIndex) => {
