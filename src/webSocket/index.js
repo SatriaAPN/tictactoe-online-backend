@@ -1,9 +1,9 @@
 
-const RoomsData = require('../data/roomsData');
+const RoomsData = require('../config/data/roomsData');
 const roomsData = new RoomsData();
-const RoomsPlayingData = require('../data/roomsPlayingData');
+const RoomsPlayingData = require('../config/data/roomsPlayingData');
 const roomsPlayingData = new RoomsPlayingData();
-const jwtFunction = require('../lib/jwtFunction');
+const jwtFunction = require('../config/lib/jwtFunction');
 
 const { server } = require('../config/config');
 const { Server } = require('socket.io');
@@ -216,41 +216,39 @@ io.on('connection', (socket) => {
       userMove: msg.moveIndex //[1,1]
     };
 
-    console.log('body', body);
-
     // const user = await jwtFunction(body.jwtFunction); // {username, uuid}
     
     // find and check if the room is found
-    if(!roomsObject[body.roomUuid]) {
-      throw new Error('room did not found');
-    }
+    if(!roomsData.getRoom(body.roomUuid)) throw new Error('room did not found');
 
-    if(!roomsPlayingObject[body.roomUuid]) throw new Error('room playing did not found');
+    // find and check if the room playing is found
+    if(!roomsPlayingData.getRoomPlaying(body.roomUuid)) throw new Error('room playing did not found');
 
     // check if the tictactoe index has been occupied by another player
-    if(roomsPlayingObject[body.roomUuid].tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
+    if(roomsPlayingData.getRoomPlaying(body.roomUuid).tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
       throw new Error('the index space has been occupied by another player');
     }
 
     // insert the player move index into the roomPlayingArray
-    roomsPlayingObject[body.roomUuid].tictactoeArray[body.userMove[0]][body.userMove[1]] = body.jwtToken.split(' ')[2];
+    roomsPlayingData.setPlayerMove(body.roomUuid, [[body.userMove[0]], [body.userMove[1]]], body.jwtToken.split(' ')[2])
+    
 
     // change the player turn
-    if(roomsPlayingObject[body.roomUuid].playerTurn === roomsObject[body.roomUuid].players[0].token) {
-      roomsPlayingObject[body.roomUuid].playerTurn = roomsObject[body.roomUuid].players[1].token;
+    if(roomsPlayingData.getRoomPlaying(body.roomUuid).playerTurn === roomsData.getRoom(body.roomUuid).players[0].token) {
+      roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[1].token);
     } else {
-      roomsPlayingObject[body.roomUuid].playerTurn = roomsObject[body.roomUuid].players[0].token; 
+      roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[0].token);
     }
 
     // check if any user win
     // checkIfPlayerWin(body.jwtFunction.split('')[2], roomPlayingIndex)
-
+console.log(roomsPlayingData.getRoomPlaying(body.roomUuid))
     // emit the new array's data to the frontend
-    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingObject[body.roomUuid]);
+    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingData.getRoomPlaying(body.roomUuid));
 
     // if a player win, delete the roomPlaying from the array
-    if(roomsPlayingObject[body.roomUuid].playerWin != null) {
-      delete roomsPlayingObject[body.roomUuid];
+    if(roomsPlayingData.getRoomPlaying(body.roomUuid).playerWin != null) {
+      roomsPlayingData.deleteRoomPlaying(body.roomUuid);
     }
   })
 });

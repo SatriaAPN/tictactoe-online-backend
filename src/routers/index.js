@@ -2,11 +2,11 @@ const {
   express
 } = require('../config/config');
 const router = express();
-const RoomsData = require('../data/roomsData');
+const RoomsData = require('../config/data/roomsData');
 const roomsData = new RoomsData();
-const RoomsPlayingData = require('../data/roomsPlayingData');
+const RoomsPlayingData = require('../config/data/roomsPlayingData');
 const roomsPlayingData = new RoomsPlayingData();
-const jwtFunction = require('../lib/jwtFunction');
+const jwtFunction = require('../config/lib/jwtFunction');
 
 const { nanoid } = require('nanoid');
 

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const {
   jwtSecretKey
-} = require('../config/config');
+} = require('../config');
 
 const verifJwtToken = async(token) => {
   const jwtToken = token.split(' ')[2]; // Header jwt {token}

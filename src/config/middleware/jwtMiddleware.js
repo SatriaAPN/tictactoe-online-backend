@@ -1,6 +1,6 @@
 const {
   jwtSecretKey
-} = require('../config/config');
+} = require('../config');
 const jwt = require('jsonwebtoken');
 
 
