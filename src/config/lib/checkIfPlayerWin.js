@@ -1,3 +1,6 @@
+const RoomsPlayingData = require('../data/roomsPlayingData');
+const roomsPlayingData = new RoomsPlayingData();
+
 const checkIfPlayerWin = async(userToken, roomPlayingIndex) => {
   const roomPlaying = roomsPlayingArray[roomPlayingIndex];
   const tictactoeArray = roomPlaying.tictactoeArray;

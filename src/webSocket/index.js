@@ -202,53 +202,56 @@ console.log(user)
     } else {
       roomsData.setRoomPlaying(body.roomUuid, false);
     }
-
+console.log(roomsData.getRoom(body.roomUuid))
     // emit the new array's data to the frontend
     io.emit( `room/${body.roomUuid}/playerReady`, roomsData.getRoom(body.roomUuid));
   })
 
   socket.on('playerMove', async(msg) => {
-    console.log('a player is moving ');
+    try {
+      console.log('a player is moving ');
 
-    const body = {
-      jwtToken: msg.Authorization,
-      roomUuid: msg.roomUuid,
-      userMove: msg.moveIndex //[1,1]
-    };
+      const body = {
+        jwtToken: msg.Authorization,
+        roomUuid: msg.roomUuid,
+        userMove: msg.moveIndex //[1,1]
+      };
+  
+      // const user = await jwtFunction(body.jwtFunction); // {username, uuid}
+      
+      // find and check if the room is found
+      if(!roomsData.getRoom(body.roomUuid)) throw new Error('room did not found');
+  
+      // find and check if the room playing is found
+      if(!roomsPlayingData.getRoomPlaying(body.roomUuid)) throw new Error('room playing did not found');
+  
+      // check if the tictactoe index has been occupied by another player
+      if(roomsPlayingData.getRoomPlaying(body.roomUuid).tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
+        throw new Error('the index space has been occupied by another player');
+      }
+  
+      // insert the player move index into the roomPlayingArray
+      roomsPlayingData.setPlayerMove(body.roomUuid, [[body.userMove[0]], [body.userMove[1]]], body.jwtToken.split(' ')[2])
+      
+  
+      // change the player turn
+      if(roomsPlayingData.getRoomPlaying(body.roomUuid).playerTurn === roomsData.getRoom(body.roomUuid).players[0].token) {
+        roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[1].token);
+      } else {
+        roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[0].token);
+      }
 
-    // const user = await jwtFunction(body.jwtFunction); // {username, uuid}
-    
-    // find and check if the room is found
-    if(!roomsData.getRoom(body.roomUuid)) throw new Error('room did not found');
-
-    // find and check if the room playing is found
-    if(!roomsPlayingData.getRoomPlaying(body.roomUuid)) throw new Error('room playing did not found');
-
-    // check if the tictactoe index has been occupied by another player
-    if(roomsPlayingData.getRoomPlaying(body.roomUuid).tictactoeArray[body.userMove[0]][body.userMove[1]] != 0) {
-      throw new Error('the index space has been occupied by another player');
-    }
-
-    // insert the player move index into the roomPlayingArray
-    roomsPlayingData.setPlayerMove(body.roomUuid, [[body.userMove[0]], [body.userMove[1]]], body.jwtToken.split(' ')[2])
-    
-
-    // change the player turn
-    if(roomsPlayingData.getRoomPlaying(body.roomUuid).playerTurn === roomsData.getRoom(body.roomUuid).players[0].token) {
-      roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[1].token);
-    } else {
-      roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[0].token);
-    }
-
-    // check if any user win
-    // checkIfPlayerWin(body.jwtFunction.split('')[2], roomPlayingIndex)
-console.log(roomsPlayingData.getRoomPlaying(body.roomUuid))
-    // emit the new array's data to the frontend
-    io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingData.getRoomPlaying(body.roomUuid));
-
-    // if a player win, delete the roomPlaying from the array
-    if(roomsPlayingData.getRoomPlaying(body.roomUuid).playerWin != null) {
-      roomsPlayingData.deleteRoomPlaying(body.roomUuid);
+  console.log(roomsPlayingData.getRoomPlaying(body.roomUuid))
+  
+      // emit the new array's data to the frontend
+      io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingData.getRoomPlaying(body.roomUuid));
+  
+      // if a player win, delete the roomPlaying from the array
+      if(roomsPlayingData.checkIfPlayerHasWin(body.roomUuid)) {
+        roomsPlayingData.deleteRoomPlaying(body.roomUuid);
+      }
+    } catch(err) {
+      console.log(err);
     }
   })
 });

@@ -73,9 +73,9 @@ router.get('/api/room/:roomUuid/playing', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
-    if(!roomsPlayingObject[roomUuid]) throw new Error('room did not found');
+    if(!roomsPlayingData.getRoomPlaying(roomUuid)) throw new Error('room did not found');
 
-    res.status(200).json({ data: { roomPlayingData: roomsPlayingObject[roomUuid] } })
+    res.status(200).json({ data: { roomPlayingData: roomsPlayingData.getRoomPlaying(roomUuid) } })
   } catch(err) {
     res.status(400).json({ message: err.message });
   }
