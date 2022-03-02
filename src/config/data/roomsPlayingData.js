@@ -31,7 +31,7 @@ class RoomsPlayingData {
   }
 
   checkIfPLayerWin(roomUuid, playerToken) {
-    const roomPlaying = getRoomPlaying(roomUuid);
+    const roomPlaying = this.getRoomPlaying(roomUuid);
     const tictactoeArray = roomPlaying.tictactoeArray;
     
     // check column
@@ -45,8 +45,8 @@ class RoomsPlayingData {
         && tictactoeArray[1][i] === playerToken
         && tictactoeArray[2][i] === playerToken
       ) {
-        setPlayerWin(roomUuid, playerToken);
-        setWinIndex(roomUuid, [[0, i], [1, i], [2, i]]);
+        this.setPlayerWin(roomUuid, playerToken);
+        this.setWinIndex(roomUuid, [[0, i], [1, i], [2, i]]);
       }
     }
 
@@ -61,8 +61,8 @@ class RoomsPlayingData {
         && tictactoeArray[i][1] === playerToken
         && tictactoeArray[i][2] === playerToken
       ) {
-        setPlayerWin(roomUuid, playerToken);
-        setWinIndex(roomUuid, [[i, 0], [i, 1], [i, 2]]);
+        this.setPlayerWin(roomUuid, playerToken);
+        this.setWinIndex(roomUuid, [[i, 0], [i, 1], [i, 2]]);
       }
     }
 
@@ -76,8 +76,8 @@ class RoomsPlayingData {
       && tictactoeArray[1][1] === playerToken
       && tictactoeArray[2][2] === playerToken
     ) {
-      setPlayerWin(roomUuid, playerToken);
-      setWinIndex(roomUuid, [[0, 0], [1, 1], [2, 2]]);
+      this.setPlayerWin(roomUuid, playerToken);
+      this.setWinIndex(roomUuid, [[0, 0], [1, 1], [2, 2]]);
     }
 
     // check anti-diagonal
@@ -90,8 +90,8 @@ class RoomsPlayingData {
       && tictactoeArray[1][1] === playerToken
       && tictactoeArray[2][0] === playerToken
     ) {
-      setPlayerWin(roomUuid, playerToken);
-      setWinIndex(roomUuid, [[0, 2], [1, 1], [2, 0]]);
+      this.setPlayerWin(roomUuid, playerToken);
+      this.setWinIndex(roomUuid, [[0, 2], [1, 1], [2, 0]]);
     }
 
   }
