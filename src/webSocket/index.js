@@ -35,7 +35,7 @@ io.on('connection', (socket) => {
       roomName: msg.roomName
     }
 
-    const user = await jwtFunction.verifJwtToken(body.jwtToken); // {username, uuid}
+    const user = await jwtFunction.verifJwtToken(body.jwtToken); // {token, username, uuid}
 
     const data =  {
       roomPlaying: false,
