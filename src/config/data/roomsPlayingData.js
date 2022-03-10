@@ -1,3 +1,6 @@
+const RoomsData = require('../data/roomsData');
+const roomsData = new RoomsData();
+
 class RoomsPlayingData {
   constructor() {
     if (typeof RoomsPlayingData.INSTANCE === 'object') {
@@ -8,8 +11,21 @@ class RoomsPlayingData {
     RoomsPlayingData.INSTANCE = this;
   }
 
-  createRoomPlaying(roomData) {
-    this.roomsPlaying[roomData.roomUuid] = roomData;
+  createRoomPlaying(roomUuid) {
+    // create new data in roomPLaying array
+    const roomPlayingData = {
+      roomUuid: roomUuid,
+      tictactoeArray: [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0]
+      ],
+      playerWin: null,
+      playerTurn: roomsData.getRoom(roomUuid).players[0].token,
+      winIndex: []
+    }
+
+    this.roomsPlaying[roomUuid] = roomPlayingData;
   }
 
   getRoomPlaying(roomUuid) {

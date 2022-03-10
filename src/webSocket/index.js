@@ -182,20 +182,8 @@ io.on('connection', (socket) => {
         // change roomPLaying status to true
         roomsData.setRoomPlaying(body.roomUuid, true);
 
-        // create new data in roomPLaying array
-        roomPlayingData = {
-          roomUuid: body.roomUuid,
-          tictactoeArray: [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0]
-          ],
-          playerWin: null,
-          playerTurn: roomsData.getRoom(body.roomUuid).players[0].token,
-          winIndex: []
-        }
-
-        roomsPlayingData.createRoomPlaying(roomPlayingData);
+        // create new data in roomsPLayingData array
+        roomsPlayingData.createRoomPlaying(body.roomUuid);
       } else {
         roomsData.setRoomPlaying(body.roomUuid, false);
       }
