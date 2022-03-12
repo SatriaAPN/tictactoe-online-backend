@@ -1,3 +1,5 @@
+const { nanoid } = require('nanoid');
+
 class roomsData {
   constructor() {
     if (typeof roomsData.INSTANCE === 'object') {
@@ -8,8 +10,24 @@ class roomsData {
     roomsData.INSTANCE = this;
   }
   
-  addRoom(roomData) {
-    this.rooms[roomData.roomUuid] = roomData;
+  addRoom(roomName, roomType, playerData) {
+    const data =  {
+      roomPlaying: false,
+      roomType: roomType || 'public',
+      roomUuid: nanoid(10),
+      roomName: roomName,
+      players: [
+        {
+          token: playerData.token,
+          username: playerData.username,
+          uuid: playerData.uuid,
+          ready: false
+        }
+      ],
+      creator: playerData.token
+    };
+
+    this.rooms[data] = roomData;
   }
 
   getRoom(uuid) {

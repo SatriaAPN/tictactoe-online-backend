@@ -14,8 +14,6 @@ const io = new Server(server, {
   }
 });
 
-const { nanoid } = require('nanoid');
-
 io.on('connection', (socket) => {
   // if(playersArray.indexOf(socket) === -1){
   //   console.log(playersArray.indexOf(socket))
@@ -37,23 +35,7 @@ io.on('connection', (socket) => {
 
     const user = await jwtFunction.verifJwtToken(body.jwtToken); // {username, uuid}
 
-    const data =  {
-      roomPlaying: false,
-      roomType: body.roomType,
-      roomUuid: nanoid(10),
-      roomName: body.roomName,
-      players: [
-        {
-          token: user.token,
-          username: user.username,
-          uuid: user.uuid,
-          ready: false
-        }
-      ],
-      creator: user.token
-    };
-
-    roomsData.addRoom(data);
+    roomsData.addRoom(body.roomName, body.roomType, user);
 
     io.emit('createRoom', data);
   })
