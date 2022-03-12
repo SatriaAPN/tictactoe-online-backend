@@ -12,7 +12,10 @@ const jwtVerifying = async (req, res, next) => {
 
   const jwtToken = req.headers.authorization.split(' ')[2]; // Header jwt {token}
 
-  req.user = await jwt.verify(jwtToken, jwtSecretKey);
+  if(jwtToken != 'null') {
+    req.user = await jwt.verify(jwtToken, jwtSecretKey);
+  }
+  
   next();
 }
 
