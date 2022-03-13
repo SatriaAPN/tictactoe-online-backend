@@ -81,17 +81,8 @@ io.on('connection', (socket) => {
     };
 
     const user = await jwtFunction.verifJwtToken(body.jwtToken); // {username, uuid}
-    
-    // // find the room in the rooms array by uuid
-    // const roomIndex = roomsArray.map(as=>as.roomUuid).indexOf(body.roomUuid);
 
-    // // check if the room is found
-    // if(roomIndex === -1) throw new Error('room did not found');
-
-    // if(!roomsObject[body.roomUuid]) {
-    //   throw new Error('room did not found');
-    // }
-
+    // check if room exist
     if(!roomsData.getRoom(body.roomUuid)) throw new Error('room did not found');
 
     // find the player that left in the room's players array
@@ -101,7 +92,6 @@ io.on('connection', (socket) => {
     if(playerIndex === -1) throw new Error('player did not found');
 
     // remove the player that left from the room's players array
-    // roomsObject[roomUuid].players.splice(playerIndex, 1);
     roomsData.leftRoom(body.roomUuid, user.uuid)
 
     // check if the room's players is empty or not
@@ -141,6 +131,7 @@ io.on('connection', (socket) => {
 
     const user = await jwtFunction.verifJwtToken(body.jwtToken); // {username, uuid}
     
+    // check if the room exist
     if(!roomsData.getRoom(body.roomUuid)) throw new Error('room did not found');
 
     // find the player that left in the room's players array
@@ -166,13 +157,13 @@ io.on('connection', (socket) => {
 
         // create new data in roomsPLayingData array
         roomsPlayingData.createRoomPlaying(body.roomUuid);
-      } else {
+      } else { // not all players have ready
         roomsData.setRoomPlaying(body.roomUuid, false);
       }
-    } else {
+    } else { // total players are not 2
       roomsData.setRoomPlaying(body.roomUuid, false);
     }
-console.log(roomsData.getRoom(body.roomUuid))
+
     // emit the new array's data to the frontend
     io.emit( `room/${body.roomUuid}/playerReady`, roomsData.getRoom(body.roomUuid));
   })
@@ -210,8 +201,6 @@ console.log(roomsData.getRoom(body.roomUuid))
       } else {
         roomsPlayingData.setPlayerTurn(body.roomUuid, roomsData.getRoom(body.roomUuid).players[0].token);
       }
-
-  console.log(roomsPlayingData.getRoomPlaying(body.roomUuid))
   
       // emit the new array's data to the frontend
       io.emit( `room/${body.roomUuid}/playing/playerMove`, roomsPlayingData.getRoomPlaying(body.roomUuid));
