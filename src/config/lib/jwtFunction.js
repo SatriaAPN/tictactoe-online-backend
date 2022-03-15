@@ -9,7 +9,7 @@ const verifJwtToken = async(token) => {
   const userData = await jwt.verify(jwtToken, jwtSecretKey);
   userData.token = jwtToken;
   
-  return userData;
+  return userData; // return the user data
 }
 
 const signJwtToken = async(username, uuid) => {
