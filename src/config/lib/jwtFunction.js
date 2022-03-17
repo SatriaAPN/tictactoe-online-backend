@@ -13,7 +13,7 @@ const verifJwtToken = async(token) => {
 }
 
 const signJwtToken = async(username, uuid) => {
-  return await jwt.sign({ username, uuid }, jwtSecretKey); // return the signde jwt key
+  return await jwt.sign({ username, uuid }, jwtSecretKey); // return the signed jwt key
 }
 
 module.exports = {verifJwtToken, signJwtToken};
