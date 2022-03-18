@@ -27,7 +27,7 @@ class roomsData {
       creator: playerData.token
     };
 
-    this.rooms[data] = roomData;
+    this.rooms[data.roomUuid] = data;
   }
 
   getRoom(uuid) {
