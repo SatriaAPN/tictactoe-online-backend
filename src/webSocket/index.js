@@ -17,7 +17,7 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   // if(playersArray.indexOf(socket) === -1){
   //   console.log(playersArray.indexOf(socket))
-  //   console.log('a user connected');
+    console.log('a user connected');
   //   playersArray.push(socket);
   // }
 
