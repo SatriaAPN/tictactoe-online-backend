@@ -48,8 +48,10 @@ io.on('connection', (socket) => {
 
     const user = await jwtFunction.verifJwtToken(body.jwtToken); // {username, uuid}
 
+    // check if room is found
     if(!roomsData.getRoom(body.roomUuid)) throw new Error('room did not found');
 
+    // check if room is full
     if(roomsData.getRoom(body.roomUuid).players.length >= 2) throw new Error('the room is full');
 
     const player = {
