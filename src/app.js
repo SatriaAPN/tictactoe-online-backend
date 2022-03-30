@@ -3,13 +3,9 @@ const {
   server,
   express
 } = require('./config/config');
-const cors = require('cors');
 
-// middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(require('./config/middleware/jwtMiddleware')); // jwt authentication
+// import the middleware
+require('./config/middleware');
 
 // importing router from the backend
 app.use(require('./routers'));
