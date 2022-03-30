@@ -31,6 +31,7 @@ router.get('/api/rooms/:roomUuid/capacity', (req, res, next) => {
   try {
     const { roomUuid } = req.params;
 
+    // find the room 
     if(!roomsData.getRoom(roomUuid)) {
       throw new Error('room did not found');
     }
